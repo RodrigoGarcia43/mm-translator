@@ -5,7 +5,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws/credentials"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/translate"
-	"github.com/mattermost/mattermost-server/v5/model"
+	"github.com/mattermost/mattermost-server/v6/model"
 )
 
 func (p *Plugin) translatePluginMessage(userID string, channelID string, msg string, channel []*model.User) *model.AppError {
@@ -39,6 +39,18 @@ func (p *Plugin) translatePluginMessage(userID string, channelID string, msg str
 			if awsErr != nil {
 				return model.NewAppError(awsErr.Error(), channelID, nil, "error in translation", 400)
 			}
+
+			// bot, e := p.API.GetBot(p.getConfiguration().BotID, true)
+			// p.API.LogInfo(bot.UserId)
+			// if e != nil {
+			// 	return e
+			// }
+			// p.API.LogInfo("BOTS:")
+			// bots, _ := p.API.GetBots(&model.BotGetOptions{})
+			// for _, b := range bots {
+			// 	p.API.LogInfo(b.UserId)
+			// 	p.API.LogInfo(b.Description)
+			// }
 
 			_, err := p.API.CreatePost(p.API.SendEphemeralPost(user.Id, &model.Post{
 				UserId:    p.botID,

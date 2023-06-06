@@ -6,8 +6,8 @@ import (
 
 	"github.com/pkg/errors"
 
-	"github.com/mattermost/mattermost-server/v5/model"
-	"github.com/mattermost/mattermost-server/v5/plugin"
+	"github.com/mattermost/mattermost-server/v6/model"
+	"github.com/mattermost/mattermost-server/v6/plugin"
 )
 
 const (
@@ -132,7 +132,7 @@ func getCommandResponse(responseType, text string) *model.CommandResponse {
 		Text:         text,
 		Username:     translateUsername,
 		IconURL:      translateIconURL,
-		Type:         model.POST_DEFAULT,
+		Type:         model.PostTypeDefault,
 	}
 }
 
@@ -156,7 +156,7 @@ func setUserInfoCommandResponse(userInfo *UserInfo, err *APIErrorResponse, actio
 			text = "No record found. If not yet turned on for the first time, try `/autotranslate on` to enable."
 		}
 
-		return getCommandResponse(model.COMMAND_RESPONSE_TYPE_EPHEMERAL, text), nil
+		return getCommandResponse(model.CommandResponseTypeEphemeral, text), nil
 	}
 
 	text := fmt.Sprintf(
@@ -168,7 +168,7 @@ func setUserInfoCommandResponse(userInfo *UserInfo, err *APIErrorResponse, actio
 		text = "Autotranslate plugin is turned off."
 	}
 
-	return getCommandResponse(model.COMMAND_RESPONSE_TYPE_EPHEMERAL, text), nil
+	return getCommandResponse(model.CommandResponseTypeEphemeral, text), nil
 }
 
 // ExecuteCommand executes a command that has been previously registered via the RegisterCommand API.
@@ -190,13 +190,13 @@ func (p *Plugin) ExecuteCommand(_ *plugin.Context, args *model.CommandArgs) (*mo
 
 	if action == "" || action == "help" {
 		text := "###### Mattermost Autotranslate Plugin - Slash Command Help\n" + strings.ReplaceAll(commandHelp, "|", "`")
-		return getCommandResponse(model.COMMAND_RESPONSE_TYPE_EPHEMERAL, text), nil
+		return getCommandResponse(model.CommandResponseTypeEphemeral, text), nil
 	}
 
 	userInfo, _ := p.getUserInfo(args.UserId)
 	if userInfo == nil && action != "on" {
 		text := "No record found. Try `/autotranslate on` to enable."
-		return getCommandResponse(model.COMMAND_RESPONSE_TYPE_EPHEMERAL, text), nil
+		return getCommandResponse(model.CommandResponseTypeEphemeral, text), nil
 	}
 
 	switch action {
@@ -205,7 +205,7 @@ func (p *Plugin) ExecuteCommand(_ *plugin.Context, args *model.CommandArgs) (*mo
 			"Your autotranslation plugin settings:\n * Active: `%s`\n * Language: `source: %s`, `target: %s`\n",
 			userInfo.getActivatedString(), languageCodes[userInfo.SourceLanguage], languageCodes[userInfo.TargetLanguage],
 		)
-		return getCommandResponse(model.COMMAND_RESPONSE_TYPE_EPHEMERAL, text), nil
+		return getCommandResponse(model.CommandResponseTypeEphemeral, text), nil
 	case "on":
 		if userInfo == nil {
 			userInfo = p.NewUserInfo(args.UserId)
@@ -217,7 +217,7 @@ func (p *Plugin) ExecuteCommand(_ *plugin.Context, args *model.CommandArgs) (*mo
 		return setUserInfoCommandResponse(userInfo, err, action)
 	case "off":
 		if userInfo == nil {
-			return getCommandResponse(model.COMMAND_RESPONSE_TYPE_EPHEMERAL, "No record found. If not yet turned on for the first time, try `/autotranslate on` to enable. Otherwise, your record is lost for unknown reason."), nil
+			return getCommandResponse(model.CommandResponseTypeEphemeral, "No record found. If not yet turned on for the first time, try `/autotranslate on` to enable. Otherwise, your record is lost for unknown reason."), nil
 		}
 
 		userInfo.Activated = false
@@ -225,15 +225,15 @@ func (p *Plugin) ExecuteCommand(_ *plugin.Context, args *model.CommandArgs) (*mo
 		return setUserInfoCommandResponse(userInfo, err, action)
 	case "source":
 		if userInfo == nil {
-			return getCommandResponse(model.COMMAND_RESPONSE_TYPE_EPHEMERAL, "No record found. If not yet turned on for the first time, try `/autotranslate on` to enable. Otherwise, your record is lost for unknown reason."), nil
+			return getCommandResponse(model.CommandResponseTypeEphemeral, "No record found. If not yet turned on for the first time, try `/autotranslate on` to enable. Otherwise, your record is lost for unknown reason."), nil
 		}
 
 		if param == "" {
-			return getCommandResponse(model.COMMAND_RESPONSE_TYPE_EPHEMERAL, "Invalid empty source language. Should pass a valid language code or set to \"auto\"."), nil
+			return getCommandResponse(model.CommandResponseTypeEphemeral, "Invalid empty source language. Should pass a valid language code or set to \"auto\"."), nil
 		}
 
 		if languageCodes[param] == "" {
-			return getCommandResponse(model.COMMAND_RESPONSE_TYPE_EPHEMERAL, fmt.Sprintf("Invalid \"%s\" source language. Should pass a valid language code or set to \"auto\".", param)), nil
+			return getCommandResponse(model.CommandResponseTypeEphemeral, fmt.Sprintf("Invalid \"%s\" source language. Should pass a valid language code or set to \"auto\".", param)), nil
 		}
 
 		userInfo.SourceLanguage = param
@@ -241,19 +241,19 @@ func (p *Plugin) ExecuteCommand(_ *plugin.Context, args *model.CommandArgs) (*mo
 		return setUserInfoCommandResponse(userInfo, err, action)
 	case "target":
 		if userInfo == nil {
-			return getCommandResponse(model.COMMAND_RESPONSE_TYPE_EPHEMERAL, "No record found. If not yet turned on for the first time, try `/autotranslate on` to enable."), nil
+			return getCommandResponse(model.CommandResponseTypeEphemeral, "No record found. If not yet turned on for the first time, try `/autotranslate on` to enable."), nil
 		}
 
 		if param == "" {
-			return getCommandResponse(model.COMMAND_RESPONSE_TYPE_EPHEMERAL, "Invalid empty target language. Should pass a valid language code."), nil
+			return getCommandResponse(model.CommandResponseTypeEphemeral, "Invalid empty target language. Should pass a valid language code."), nil
 		}
 
 		if param == "auto" {
-			return getCommandResponse(model.COMMAND_RESPONSE_TYPE_EPHEMERAL, "Target language can't be set to \"auto\". Should pass a valid language code."), nil
+			return getCommandResponse(model.CommandResponseTypeEphemeral, "Target language can't be set to \"auto\". Should pass a valid language code."), nil
 		}
 
 		if languageCodes[param] == "" {
-			return getCommandResponse(model.COMMAND_RESPONSE_TYPE_EPHEMERAL, fmt.Sprintf("Invalid \"%s\" target language. Should pass a valid language code.", param)), nil
+			return getCommandResponse(model.CommandResponseTypeEphemeral, fmt.Sprintf("Invalid \"%s\" target language. Should pass a valid language code.", param)), nil
 		}
 
 		userInfo.TargetLanguage = param
@@ -261,6 +261,6 @@ func (p *Plugin) ExecuteCommand(_ *plugin.Context, args *model.CommandArgs) (*mo
 		return setUserInfoCommandResponse(userInfo, err, action)
 	default:
 		text := "###### Mattermost Autotranslate Plugin - Slash Command Help\n" + strings.ReplaceAll(commandHelp, "|", "`")
-		return getCommandResponse(model.COMMAND_RESPONSE_TYPE_EPHEMERAL, text), nil
+		return getCommandResponse(model.CommandResponseTypeEphemeral, text), nil
 	}
 }
