@@ -3,6 +3,8 @@ package main
 import (
 	"reflect"
 
+	"github.com/mattermost/mattermost-server/v5/model"
+	"github.com/mattermost/mattermost-server/v5/plugin"
 	"github.com/pkg/errors"
 )
 
@@ -18,6 +20,20 @@ import (
 // If you add non-reference types to your configuration struct, be sure to rewrite Clone as a deep
 // copy appropriate for your types.
 type configuration struct {
+	// AWS access key
+	AWSAccessKeyID string
+
+	// AWS secret key
+	AWSSecretAccessKey string
+
+	// AWS region with "us-east-1" as default
+	AWSRegion string
+
+	// demoUserID is the id of the user specified above.
+	BotID string
+
+	// disable plugin
+	disabled bool
 }
 
 // Clone shallow copies the configuration. Your implementation may require a deep copy if
@@ -68,16 +84,26 @@ func (p *Plugin) setConfiguration(configuration *configuration) {
 	p.configuration = configuration
 }
 
-// OnConfigurationChange is invoked when configuration changes may have been made.
 func (p *Plugin) OnConfigurationChange() error {
-	var configuration = new(configuration)
+	configuration := p.getConfiguration().Clone()
 
 	// Load the public configuration fields from the Mattermost server configuration.
-	if err := p.API.LoadPluginConfiguration(configuration); err != nil {
-		return errors.Wrap(err, "failed to load plugin configuration")
+	if loadConfigErr := p.API.LoadPluginConfiguration(configuration); loadConfigErr != nil {
+		return errors.Wrap(loadConfigErr, "failed to load plugin configuration")
 	}
 
 	p.setConfiguration(configuration)
+
+	botID, ensureBotError := p.Helpers.EnsureBot(&model.Bot{
+		Username:    "autotranslate-bot",
+		DisplayName: "Autotranslate Bot",
+		Description: "A bot account created by the autotranslate plugin.",
+	}, plugin.ProfileImagePath("/assets/icon.png"))
+	if ensureBotError != nil {
+		return errors.Wrap(ensureBotError, "failed to ensure autotranslate bot")
+	}
+
+	p.botID = botID
 
 	return nil
 }
