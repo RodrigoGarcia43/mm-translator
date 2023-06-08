@@ -40,26 +40,11 @@ func (p *Plugin) translatePluginMessage(userID string, channelID string, msg str
 				return model.NewAppError(awsErr.Error(), channelID, nil, "error in translation", 400)
 			}
 
-			// bot, e := p.API.GetBot(p.getConfiguration().BotID, true)
-			// p.API.LogInfo(bot.UserId)
-			// if e != nil {
-			// 	return e
-			// }
-			// p.API.LogInfo("BOTS:")
-			// bots, _ := p.API.GetBots(&model.BotGetOptions{})
-			// for _, b := range bots {
-			// 	p.API.LogInfo(b.UserId)
-			// 	p.API.LogInfo(b.Description)
-			// }
-
-			_, err := p.API.CreatePost(p.API.SendEphemeralPost(user.Id, &model.Post{
+			p.API.SendEphemeralPost(user.Id, &model.Post{
 				UserId:    p.botID,
 				ChannelId: channelID,
 				Message:   *output.TranslatedText,
-			}))
-			if err != nil {
-				return err
-			}
+			})
 		}
 	}
 

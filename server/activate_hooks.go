@@ -18,10 +18,11 @@ func (p *Plugin) OnActivate() error {
 	p.client = pluginapi.NewClient(p.API, p.Driver)
 
 	botID, err := p.client.Bot.EnsureBot(&model.Bot{
-		Username:    "aws-sns",
-		DisplayName: "AWS SNS Plugin",
-		Description: "A bot account created by the plugin AWS SNS",
-	})
+		Username:    "translator-bot",
+		DisplayName: "Translator",
+		Description: "A bot account created by the translator plugin",
+	},
+		pluginapi.ProfileImagePath("assets/R.jpeg"))
 	if err != nil {
 		return errors.Wrap(err, "can't ensure bot")
 	}
