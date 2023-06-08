@@ -1,6 +1,8 @@
 package main
 
 import (
+	pluginapi "github.com/mattermost/mattermost-plugin-api"
+	"github.com/mattermost/mattermost-server/v6/model"
 	"github.com/pkg/errors"
 )
 
@@ -12,7 +14,18 @@ func (p *Plugin) OnActivate() error {
 	if err := p.registerCommands(); err != nil {
 		return errors.Wrap(err, "failed to register commands")
 	}
-	configuration := p.getConfiguration().Clone()
-	p.botID = configuration.BotID
+
+	p.client = pluginapi.NewClient(p.API, p.Driver)
+
+	botID, err := p.client.Bot.EnsureBot(&model.Bot{
+		Username:    "aws-sns",
+		DisplayName: "AWS SNS Plugin",
+		Description: "A bot account created by the plugin AWS SNS",
+	})
+	if err != nil {
+		return errors.Wrap(err, "can't ensure bot")
+	}
+	p.botID = botID
+
 	return nil
 }

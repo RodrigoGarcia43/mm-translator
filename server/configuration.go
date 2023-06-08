@@ -101,7 +101,7 @@ func (p *Plugin) OnConfigurationChange() error {
 	// 	return errors.Wrap(ensureBotError, "failed to ensure autotranslate bot")
 	// }
 
-	p.botID = p.getConfiguration().BotID
+	// p.botID = p.getConfiguration().BotID
 
 	return nil
 }
