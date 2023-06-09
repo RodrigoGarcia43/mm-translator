@@ -12,10 +12,6 @@ func (p *Plugin) translatePluginMessage(userID string, channelID string, post *m
 	configuration := p.getConfiguration()
 	userInfo, _ := p.getUserInfo(userID)
 
-	if configuration.disabled || !userInfo.Activated {
-		return nil
-	}
-
 	sess := session.Must(session.NewSession())
 	creds := credentials.NewStaticCredentials(configuration.AWSAccessKeyID, configuration.AWSSecretAccessKey, "")
 	_, awsErr := creds.Get()
