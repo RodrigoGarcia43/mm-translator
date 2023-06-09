@@ -1,8 +1,6 @@
 package main
 
 import (
-	"fmt"
-
 	"github.com/mattermost/mattermost-server/v6/model"
 	"github.com/mattermost/mattermost-server/v6/plugin"
 )
@@ -34,18 +32,18 @@ func (p *Plugin) MessageHasBeenPosted(_ *plugin.Context, post *model.Post) {
 		return
 	}
 
-	channelUsers, err := p.API.GetUsersInChannel(post.ChannelId, "username", 0, 100)
-	if err != nil {
-		p.API.LogError(
-			"Failed to get users in channel",
-			"channel_id", post.ChannelId,
-			"error", err.Error(),
-		)
-		return
-	}
+	// channelUsers, err := p.API.GetUsersInChannel(post.ChannelId, "username", 0, 100)
+	// if err != nil {
+	// 	p.API.LogError(
+	// 		"Failed to get users in channel",
+	// 		"channel_id", post.ChannelId,
+	// 		"error", err.Error(),
+	// 	)
+	// 	return
+	// }
 
-	msg := fmt.Sprintf("%s -> %s", user.Username, post.Message)
-	if err := p.translatePluginMessage(user.Id, channel.Id, msg, channelUsers); err != nil {
+	// msg := fmt.Sprintf("%s -> %s", user.Username, post.Message)
+	if err := p.translatePluginMessage(user.Id, channel.Id, post); err != nil {
 		p.API.LogError(
 			"Failed to post MessageHasBeenPosted message",
 			"channel_id", channel.Id,
