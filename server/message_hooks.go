@@ -6,19 +6,19 @@ import (
 )
 
 func (p *Plugin) MessageHasBeenPosted(_ *plugin.Context, post *model.Post) {
-	configuration := p.getConfiguration()
 
-	if configuration.disabled {
+	// Make sure that Feedbackbot doesn't respond to itself
+	if post.UserId == p.botID {
 		return
 	}
 
-	user, err := p.API.GetUser(post.UserId)
-	if err != nil {
-		p.API.LogError(
-			"Failed to query user",
-			"user_id", post.UserId,
-			"error", err.Error(),
-		)
+	// Or to system messages
+	if post.IsSystemMessage() {
+		return
+	}
+
+	configuration := p.getConfiguration()
+	if configuration.disabled {
 		return
 	}
 
@@ -32,6 +32,22 @@ func (p *Plugin) MessageHasBeenPosted(_ *plugin.Context, post *model.Post) {
 		return
 	}
 
+	// Make sure this is not a post sent by another bot
+	user, appErr := p.API.GetUser(post.UserId)
+	if appErr != nil {
+		p.API.LogError("Unable to get sender translator bot", "err", appErr)
+		return
+	}
+
+	if user.IsBot {
+		return
+	}
+
+	userInfo, _ := p.getUserInfo(post.UserId)
+
+	if configuration.disabled || !userInfo.Activated {
+		return
+	}
 	// channelUsers, err := p.API.GetUsersInChannel(post.ChannelId, "username", 0, 100)
 	// if err != nil {
 	// 	p.API.LogError(
